@@ -48,20 +48,13 @@ elif os.path.isfile('/etc/iskratel_installed_products.properties') == True:
 
 #System 4
 elif os.path.isfile('C:\\Program Files\\Nokia Solutions and Networks\\Traffica\\TrafRTTServer\\traffica.exe') == True:
-        path = os.path.join(r'C:\Program Files\Nokia Solutions and Networks\Traffica\TrafRTTServer', 'traffica.exe')
-        command = 'powershell.exe Get-ChildItem "{0}"'.format(path)
-
-        process=subprocess.Popen(["powershell","Get-Childitem \"C:\\Program Files\\Nokia Solutions and Networks\\Traffica\\TrafRTTServer\\traffica.exe\" | Get-ItemProperty | Select VersionInfo | Format-List *"],stdout=subprocess.PIPE);
-        result=process.communicate()[0]
-        result = list(str(result, 'utf-8').split('\n'))
-        datastring = result[9].split(':')
-        data = re.sub("^\s+|\n|\r|\s+$", '', datastring[1])
+        process=subprocess.Popen(["powershell","Get-Childitem \"C:\\Program Files\\Nokia Solutions and Networks\\Traffica\\TrafRTTServer\\traffica.exe\" | Get-ItemProperty | Select VersionInfo | Format-List *"],stdout=subprocess.PIPE)
+        data = re.sub("\,", '.', re.sub("^\s+|\n|\r|\s+$", '', re.findall(r'ProductVersion:\s+[0-9\,]+', str(process.communicate()[0], 'utf-8'))[0].split(':')[1]))
         item = "NMS.version"
         zabbix_sender(item, data, HOST)
         
-        process=subprocess.Popen(["powershell","Get-WmiObject -Class Win32_OperatingSystem | ForEach-Object -MemberName Caption"],stdout=subprocess.PIPE);
-        result=process.communicate()[0]
-        result = re.sub("^\s+|\n|\r|\s+$", '', str(result, 'utf-8'))
+        process=subprocess.Popen(["powershell","Get-WmiObject -Class Win32_OperatingSystem | ForEach-Object -MemberName Caption"],stdout=subprocess.PIPE)
+        result = re.sub("^\s+|\n|\r|\s+$", '', str(process.communicate()[0], 'utf-8'))
         item = "OS.version"
         zabbix_sender(item, result, HOST)
 
